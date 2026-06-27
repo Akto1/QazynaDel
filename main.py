@@ -41,7 +41,11 @@ async def main() -> None:
     logger.info("Database initialized")
 
     bot, dp = bot_module.build_bot_and_dispatcher()
-
+    
+    await asyncio.gather(
+        dp.start_polling(bot),
+        run_api(bot)
+    )
     async def _polling():
         logger.info("Bot polling started")
         try:
