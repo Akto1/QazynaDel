@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QazynaDelivery</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div id="app-container">
+
+        <section id="screen-main" class="screen active">
+            <header class="app-header">
+                <div class="user-greeting">
+                    <span id="user-greeting-text">Привет, Сосед!</span> 👋
+                </div>
+                <div class="banner">
+                    <div class="banner-title">Доставка по нашему ЖК</div>
+                    <div class="banner-subtitle">Свежие продукты у двери за 15-20 минут</div>
+                </div>
+            </header>
+            <main class="section-content">
+                <h2 class="section-title">Категории</h2>
+                <div id="categories-grid" class="categories-grid">
+                    </div>
+            </main>
+        </section>
+
+        <section id="screen-products" class="screen">
+            <header class="sub-header">
+                <button id="btn-back-to-cats" class="btn-icon">‹ Назад</button>
+                <h2 id="category-page-title" class="category-page-title">Категория</h2>
+            </header>
+            <main class="section-content">
+                <div id="products-grid" class="products-grid"></div>
+                <div class="pagination-wrapper">
+                    <button id="btn-load-more" class="btn-secondary hidden">Показать ещё</button>
+                </div>
+                <div id="products-empty-state" class="empty-state hidden"></div>
+            </main>
+        </section>
+
+        <section id="screen-cart" class="screen">
+            <header class="sub-header">
+                <h2 class="category-page-title">Корзина</h2>
+                <button id="btn-clear-cart" class="btn-text hidden">Очистить</button>
+            </header>
+            <main class="section-content">
+                <div id="cart-empty-state" class="empty-state">
+                    <div class="empty-icon">🛒</div>
+                    <p>Ваша корзина пуста</p>
+                    <button class="btn-primary-small go-to-catalog-btn">Выбрать продукты</button>
+                </div>
+
+                <form id="cart-checkout-form" class="checkout-form hidden">
+                    <div id="cart-items-list" class="cart-items-list"></div>
+
+                    <div class="summary-box">
+                        <div class="summary-row">
+                            <span>Товары:</span>
+                            <span id="summary-subtotal">0 ₸</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Доставка:</span>
+                            <span id="summary-delivery">200 ₸</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Итого:</span>
+                            <span id="summary-grand-total">0 ₸</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Способ оплаты</label>
+                        <div class="payment-methods-grid">
+                            <label class="payment-method-card">
+                                <input type="radio" name="payment_method" value="kaspi" checked>
+                                <span>Перевод Kaspi</span>
+                            </label>
+                            <label class="payment-method-card">
+                                <input type="radio" name="payment_method" value="cash">
+                                <span>Наличными курьеру</span>
+                            </label>
+                        </div>
+                        <div id="kaspi-payment-info" class="hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Время доставки</label>
+                        <select id="checkout-time" class="form-control"></select>
+                        <div id="delivery-closed-hint" class="delivery-closed-hint hidden">
+                            🌙 Приём заказов с 10:00 до 23:00
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Адрес в ЖК *</label>
+                        <button type="button" id="btn-select-address" class="btn-secondary address-select-btn">
+                            Выбрать адрес
+                        </button>
+                        <div id="selected-address-display" class="hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Номер телефона *</label>
+                        <div class="phone-wrapper">
+                            <span class="phone-flag">🇰🇿</span>
+                            <input type="tel" id="checkout-phone" class="form-control" placeholder="+7 (___) ___-__-__" inputmode="numeric" autocomplete="tel" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Комментарий курьеру</label>
+                        <textarea id="checkout-comment" class="form-control" placeholder="Например: позвонить за 5 минут" rows="2"></textarea>
+                    </div>
+
+                    <button type="submit" id="btn-submit-order" class="btn-primary">Оформить заказ</button>
+                </form>
+            </main>
+        </section>
+
+        <section id="screen-orders" class="screen">
+            <header class="sub-header">
+                <h2 class="category-page-title">Мои заказы</h2>
+            </header>
+            <main class="section-content">
+                <div id="orders-history-list"></div>
+            </main>
+        </section>
+
+        <section id="screen-success" class="screen">
+            <div class="success-container">
+                <div class="success-icon">🎉</div>
+                <h2>Заказ принят!</h2>
+                <p>Номер вашего заказа: <b id="success-order-id">#0</b></p>
+                <p class="success-hint">Курьер уже собирает пакет. Статус заказа можно отслеживать в разделе «Мои заказы».</p>
+                <button id="btn-success-close" class="btn-primary">Отлично</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Модалка выбора адреса -->
+    <div id="address-modal" class="modal hidden"></div>
+
+    <!-- Модалка поддержки -->
+    <div id="support-modal" class="modal hidden">
+        <div class="modal-sheet">
+            <div class="modal-title">Поддержка</div>
+            <div class="modal-hint">Опишите ваш вопрос — мы получим его и ответим в Telegram.</div>
+            <textarea id="support-message" class="form-control" placeholder="Например: курьер не привёз заказ..." rows="5" maxlength="4000"></textarea>
+            <div id="support-char-count" class="support-counter">0 / 4000</div>
+            <div class="modal-actions">
+                <button class="btn-secondary" data-action="support-close">Отмена</button>
+                <button class="btn-primary" data-action="support-send">Отправить</button>
+            </div>
+            <button class="modal-close-btn" data-action="support-close">✕</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-target="main">
+            <span class="nav-icon">📁</span>
+            <span>Каталог</span>
+        </button>
+        <button class="nav-item" data-target="cart">
+            <span class="nav-icon cart-icon-box">
+                🛒
+                <span id="cart-badge" class="badge hidden">0</span>
+            </span>
+            <span>Корзина</span>
+        </button>
+        <button class="nav-item" data-target="orders">
+            <span class="nav-icon">🕒</span>
+            <span>Заказы</span>
+        </button>
+        <button id="nav-support-btn" class="nav-item">
+            <span class="nav-icon">💬</span>
+            <span>Поддержка</span>
+        </button>
+    </nav>
+
+    <script src="/static/app.js"></script>
+
+</body>
+</html>
