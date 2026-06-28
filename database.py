@@ -710,9 +710,9 @@ async def get_or_create_user(
 
             return dict(user)
 
-        cur = await db.execute(
+        await db.execute(
 
-            "INSERT INTO users (telegram_id, first_name, last_name) VALUES (?, ?, ?)",
+            "INSERT OR IGNORE INTO users (telegram_id, first_name, last_name) VALUES (?, ?, ?)",
 
             (telegram_id, first_name, last_name),
 
@@ -726,7 +726,13 @@ async def get_or_create_user(
 
         )
 
-        return dict(await cur.fetchone())
+        row = await cur.fetchone()
+
+        if row:
+
+            return dict(row)
+
+        raise RuntimeError(f"Failed to get_or_create_user for telegram_id={telegram_id}")
 
 
 
@@ -2423,3 +2429,4 @@ async def get_products_by_category_paginated(category_id: int, page: int = 1, li
             rows = await cur.fetchall()
 
             return [dict(r) for r in rows]
+
